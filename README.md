@@ -45,4 +45,5 @@ Metrics
 | `gqgmc_info`                         | Device information                                                             |
 | `gqgmc_cpm`                          | Detected counts per minute from Geiger–Muller counter                          |
 | `gqgmc_voltage`                      | Current device voltage                                                         |
+| `gqgmc_temperature`                  | Current device temperature (if supported)                                      |
 

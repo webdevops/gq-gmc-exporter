@@ -136,3 +136,27 @@ func (d *GqGmcDevice) GetVoltage() (cpm float64) {
 
 	return
 }
+
+func (d *GqGmcDevice) GetTemperature() (temp float64) {
+	if err := d.write("GETTEMP"); err != nil {
+		log.Panicf("error sending command to serial port: %v", err)
+	}
+
+	if buf, err := d.read(4); err == nil {
+		tempInt := int(buf[0])
+		tempDec := int(buf[1])
+		tempSign := int(buf[2])
+
+		// if sign is 0, temp is greater 0 and so positive
+		// if sign != 0, temp is below 0 and so negative
+		if tempSign != 0 {
+			tempSign = -1
+		}
+
+		temp = float64(tempSign*(tempInt*1000) + tempDec)
+	} else {
+		log.Panicf("error reading from serial port: %v", err)
+	}
+
+	return
+}

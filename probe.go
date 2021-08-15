@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	prometheusGmcInfo    *prometheus.GaugeVec
-	prometheusGmcCpm     *prometheus.GaugeVec
-	prometheusGmcVoltage *prometheus.GaugeVec
+	prometheusGmcInfo        *prometheus.GaugeVec
+	prometheusGmcCpm         *prometheus.GaugeVec
+	prometheusGmcVoltage     *prometheus.GaugeVec
+	prometheusGmcTemperature *prometheus.GaugeVec
 )
 
 func setupMetrics() {
@@ -39,13 +40,24 @@ func setupMetrics() {
 	prometheusGmcVoltage = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "gqgmc_voltage",
-			Help: "GQ GMC counts per minute",
+			Help: "GQ GMC battery voltage",
 		},
 		[]string{
 			"port",
 		},
 	)
 	prometheus.MustRegister(prometheusGmcVoltage)
+
+	prometheusGmcTemperature = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "gqgmc_temperature",
+			Help: "GQ GMC device temperature",
+		},
+		[]string{
+			"port",
+		},
+	)
+	prometheus.MustRegister(prometheusGmcTemperature)
 }
 
 func runProbes() {
@@ -74,8 +86,11 @@ func runProbes() {
 		time.Sleep(10 * time.Second)
 
 		for {
-			prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetCpm())
-			prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetVoltage())
+			go func() {
+				prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetCpm())
+				prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetVoltage())
+				prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetTemperature())
+			}()
 			time.Sleep(30 * time.Second)
 		}
 	}()
