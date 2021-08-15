@@ -19,8 +19,8 @@ func setupMetrics() {
 		},
 		[]string{
 			"port",
-			"hwModel",
-			"hwVersion",
+			"model",
+			"version",
 		},
 	)
 	prometheus.MustRegister(prometheusGmcInfo)
