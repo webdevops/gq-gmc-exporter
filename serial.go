@@ -115,7 +115,7 @@ func (d *GqGmcDevice) GetCpm() (cpm *float64) {
 	}
 
 	if buf, err := d.read(2); err == nil {
-		if len(buf) == 1 {
+		if len(buf) == 2 {
 			val := float64(binary.BigEndian.Uint16(buf))
 			cpm = &val
 		}
