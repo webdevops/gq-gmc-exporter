@@ -109,13 +109,16 @@ func (d *GqGmcDevice) GetHardwareSerial() (hwSerial string) {
 	return
 }
 
-func (d *GqGmcDevice) GetCpm() (cpm float64) {
+func (d *GqGmcDevice) GetCpm() (cpm *float64) {
 	if err := d.write("GETCPM"); err != nil {
 		log.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if buf, err := d.read(2); err == nil {
-		cpm = float64(binary.BigEndian.Uint16(buf))
+		if len(buf) == 1 {
+			val := float64(binary.BigEndian.Uint16(buf))
+			cpm = &val
+		}
 	} else {
 		log.Panicf("error reading from serial port: %v", err)
 	}
@@ -123,13 +126,16 @@ func (d *GqGmcDevice) GetCpm() (cpm float64) {
 	return
 }
 
-func (d *GqGmcDevice) GetVoltage() (cpm float64) {
+func (d *GqGmcDevice) GetVoltage() (voltage *float64) {
 	if err := d.write("GETVOLT"); err != nil {
 		log.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if buf, err := d.read(1); err == nil {
-		cpm = float64(uint(buf[0]))
+		if len(buf) == 1 {
+			val := float64(uint(buf[0]))
+			voltage = &val
+		}
 	} else {
 		log.Panicf("error reading from serial port: %v", err)
 	}
@@ -137,23 +143,26 @@ func (d *GqGmcDevice) GetVoltage() (cpm float64) {
 	return
 }
 
-func (d *GqGmcDevice) GetTemperature() (temp float64) {
+func (d *GqGmcDevice) GetTemperature() (temp *float64) {
 	if err := d.write("GETTEMP"); err != nil {
 		log.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if buf, err := d.read(4); err == nil {
-		tempInt := int(buf[0])
-		tempDec := int(buf[1])
-		tempSign := int(buf[2])
+		if len(buf) == 4 {
+			tempInt := int(buf[0])
+			tempDec := int(buf[1])
+			tempSign := int(buf[2])
 
-		// if sign is 0, temp is greater 0 and so positive
-		// if sign != 0, temp is below 0 and so negative
-		if tempSign != 0 {
-			tempSign = -1
+			// if sign is 0, temp is greater 0 and so positive
+			// if sign != 0, temp is below 0 and so negative
+			if tempSign != 0 {
+				tempSign = -1
+			}
+
+			calcTemp := float64(tempSign*(tempInt*1000) + tempDec)
+			temp = &calcTemp
 		}
-
-		temp = float64(tempSign*(tempInt*1000) + tempDec)
 	} else {
 		log.Panicf("error reading from serial port: %v", err)
 	}

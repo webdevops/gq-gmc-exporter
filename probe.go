@@ -87,9 +87,17 @@ func runProbes() {
 
 		for {
 			go func() {
-				prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetCpm())
-				prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetVoltage())
-				prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(gmcDevice.GetTemperature())
+				if val := gmcDevice.GetCpm(); val != nil {
+					prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(*val)
+				}
+
+				if val := gmcDevice.GetVoltage(); val != nil {
+					prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(*val)
+				}
+
+				if val := gmcDevice.GetTemperature(); val != nil {
+					prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(*val)
+				}
 			}()
 			time.Sleep(30 * time.Second)
 		}
