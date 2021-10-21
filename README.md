@@ -17,17 +17,19 @@ Usage:
   gq-gmc-exporter [OPTIONS]
 
 Application Options:
-      --debug            debug mode [$DEBUG]
-  -v, --verbose          verbose mode [$VERBOSE]
-      --log.json         Switch log output to json format [$LOG_JSON]
-      --serial.port=     Serial port device (eg. /dev/ttyUSB1) [$SERIAL_PORT]
-      --serial.baudrate= Serial bound rate (eg. 57600) [$SERIAL_BAUDRATE]
-      --serial.databits= Serial data bits (eg. 8) [$SERIAL_DATABITS]
-      --serial.stopbits= Serial stop bits (eg. 1) [$SERIAL_STOPBITS]
-      --bind=            Server address (default: :8080) [$SERVER_BIND]
+      --debug                         debug mode [$DEBUG]
+  -v, --verbose                       verbose mode [$VERBOSE]
+      --log.json                      Switch log output to json format [$LOG_JSON]
+      --serial.port=                  Serial port device (eg. /dev/ttyUSB1) [$SERIAL_PORT]
+      --serial.baudrate=              Serial bound rate (eg. 57600) [$SERIAL_BAUDRATE]
+      --serial.databits=              Serial data bits (eg. 8) [$SERIAL_DATABITS]
+      --serial.stopbits=              Serial stop bits (eg. 1) [$SERIAL_STOPBITS]
+      --serial.intercharactertimeout= An inter-character timeout value, in milliseconds (default: 1000)
+                                      [$SERIAL_INTERCHARACTERTIMEOUT]
+      --bind=                         Server address (default: :8080) [$SERVER_BIND]
 
 Help Options:
-  -h, --help             Show this help message
+  -h, --help                          Show this help message
 ```
 
 HTTP Endpoints
