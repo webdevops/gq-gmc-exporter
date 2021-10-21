@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"github.com/jacobsa/go-serial/serial"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"strings"
 )
 
 type (
@@ -15,28 +17,32 @@ type (
 		serialDataBits uint
 		serialStopBits uint
 
+		InterCharacterTimeout uint
+
 		port io.ReadWriteCloser
 	}
 )
 
-func NewGqGmcDevice(port string, baudRate, dataBits, stopBits uint) *GqGmcDevice {
+func NewGqGmcDevice(port string, baudRate, dataBits, stopBits, InterCharacterTimeout uint) *GqGmcDevice {
 	return &GqGmcDevice{
-		serialPort:     port,
-		serialBaudRate: baudRate,
-		serialDataBits: dataBits,
-		serialStopBits: stopBits,
+		serialPort:            port,
+		serialBaudRate:        baudRate,
+		serialDataBits:        dataBits,
+		serialStopBits:        stopBits,
+		InterCharacterTimeout: InterCharacterTimeout,
 	}
 }
 
 func (d *GqGmcDevice) Connect() {
 	// Set up options.
 	options := serial.OpenOptions{
-		PortName:        opts.Serial.Port,
-		BaudRate:        opts.Serial.BaudRate,
-		DataBits:        opts.Serial.DataBits,
-		StopBits:        opts.Serial.StopBits,
-		ParityMode:      serial.PARITY_NONE,
-		MinimumReadSize: 1,
+		PortName:              d.serialPort,
+		BaudRate:              d.serialBaudRate,
+		DataBits:              d.serialDataBits,
+		StopBits:              d.serialStopBits,
+		ParityMode:            serial.PARITY_NONE,
+		InterCharacterTimeout: d.InterCharacterTimeout,
+		MinimumReadSize:       0,
 	}
 
 	// Open the port.
@@ -59,10 +65,10 @@ func (d *GqGmcDevice) write(command string) error {
 	return err
 }
 
-func (d *GqGmcDevice) read(bytes uint) ([]byte, error) {
-	log.Debugf("reading %v bytes", bytes)
+func (d *GqGmcDevice) read(chars uint) ([]byte, error) {
+	log.Debugf("reading %v bytes", chars)
 
-	buf := make([]byte, bytes)
+	buf := make([]byte, chars)
 	n, err := d.port.Read(buf)
 	if err != nil {
 		if err != io.EOF {
@@ -75,19 +81,29 @@ func (d *GqGmcDevice) read(bytes uint) ([]byte, error) {
 	return buf, nil
 }
 
+func (d *GqGmcDevice) readString(chars uint) (string, error) {
+	if buf, err := d.read(chars); err == nil {
+		buf = bytes.Trim(buf, "\x00")
+		ret := strings.TrimSpace(string(buf))
+		return ret, nil
+	} else {
+		return "", err
+	}
+}
+
 func (d *GqGmcDevice) GetHardwareModel() (hwModelName string, hwModelVersion string) {
 	if err := d.write("GETVER"); err != nil {
 		log.Panicf("error sending command to serial port: %v", err)
 	}
 
-	if buf, err := d.read(7); err == nil {
-		hwModelName = string(buf)
+	if val, err := d.readString(7); err == nil {
+		hwModelName = val
 	} else {
 		log.Panicf("error reading from serial port: %v", err)
 	}
 
-	if buf, err := d.read(7); err == nil {
-		hwModelVersion = string(buf)
+	if val, err := d.readString(7); err == nil {
+		hwModelVersion = val
 	} else {
 		log.Panicf("error reading from serial port: %v", err)
 	}
@@ -100,8 +116,8 @@ func (d *GqGmcDevice) GetHardwareSerial() (hwSerial string) {
 		log.Panicf("error sending command to serial port: %v", err)
 	}
 
-	if buf, err := d.read(7); err == nil {
-		hwSerial = string(buf)
+	if val, err := d.readString(7); err == nil {
+		hwSerial = val
 	} else {
 		log.Panicf("error reading from serial port: %v", err)
 	}

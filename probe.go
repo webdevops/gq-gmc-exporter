@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -68,38 +69,52 @@ func runProbes() {
 		opts.Serial.BaudRate,
 		opts.Serial.DataBits,
 		opts.Serial.StopBits,
+		opts.Serial.InterCharacterTimeout,
 	)
 	gmcDevice.Connect()
 
 	go func() {
-		defer gmcDevice.Close()
+		runProbeLoop(gmcDevice)
+	}()
+}
 
-		// get model details
-		hwModelName, hwModelVersion := gmcDevice.GetHardwareModel()
+func runProbeLoop(gmcDevice *GqGmcDevice) {
+	defer gmcDevice.Close()
 
-		prometheusGmcInfo.WithLabelValues(
-			opts.Serial.Port,
+	// get model details
+	hwModelName, hwModelVersion := gmcDevice.GetHardwareModel()
+	if hwModelName == "" || hwModelVersion == "" {
+		log.Panic("no model or version detected, please check serial settings or device support")
+	} else {
+		log.Printf(
+			"detected device model \"%s\" with version \"%s\"\n",
 			hwModelName,
 			hwModelVersion,
-		).Set(1)
+		)
+	}
 
-		time.Sleep(10 * time.Second)
+	prometheusGmcInfo.WithLabelValues(
+		opts.Serial.Port,
+		hwModelName,
+		hwModelVersion,
+	).Set(1)
 
-		for {
-			go func() {
-				if val := gmcDevice.GetCpm(); val != nil {
-					prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(*val)
-				}
+	time.Sleep(10 * time.Second)
 
-				if val := gmcDevice.GetVoltage(); val != nil {
-					prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(*val)
-				}
+	for {
+		go func() {
+			if val := gmcDevice.GetCpm(); val != nil {
+				prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(*val)
+			}
 
-				if val := gmcDevice.GetTemperature(); val != nil {
-					prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(*val)
-				}
-			}()
-			time.Sleep(30 * time.Second)
-		}
-	}()
+			if val := gmcDevice.GetVoltage(); val != nil {
+				prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(*val)
+			}
+
+			if val := gmcDevice.GetTemperature(); val != nil {
+				prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(*val)
+			}
+		}()
+		time.Sleep(30 * time.Second)
+	}
 }

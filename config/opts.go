@@ -15,10 +15,11 @@ type (
 		}
 
 		Serial struct {
-			Port     string `long:"serial.port"  env:"SERIAL_PORT"      description:"Serial port device (eg. /dev/ttyUSB1)" required:"true"`
-			BaudRate uint   `long:"serial.baudrate"  env:"SERIAL_BAUDRATE"      description:"Serial bound rate (eg. 57600)" required:"true"`
-			DataBits uint   `long:"serial.databits"  env:"SERIAL_DATABITS"      description:"Serial data bits (eg. 8)" required:"true"`
-			StopBits uint   `long:"serial.stopbits"  env:"SERIAL_STOPBITS"      description:"Serial stop bits (eg. 1)" required:"true"`
+			Port                  string `long:"serial.port"  env:"SERIAL_PORT"      description:"Serial port device (eg. /dev/ttyUSB1)" required:"true"`
+			BaudRate              uint   `long:"serial.baudrate"  env:"SERIAL_BAUDRATE"      description:"Serial bound rate (eg. 57600)" required:"true"`
+			DataBits              uint   `long:"serial.databits"  env:"SERIAL_DATABITS"      description:"Serial data bits (eg. 8)" required:"true"`
+			StopBits              uint   `long:"serial.stopbits"  env:"SERIAL_STOPBITS"      description:"Serial stop bits (eg. 1)" required:"true"`
+			InterCharacterTimeout uint   `long:"serial.intercharactertimeout"  env:"SERIAL_INTERCHARACTERTIMEOUT"      description:"An inter-character timeout value, in milliseconds" default:"1000"`
 		}
 
 		// general options
