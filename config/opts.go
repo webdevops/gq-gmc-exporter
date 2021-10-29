@@ -19,7 +19,8 @@ type (
 			BaudRate              uint   `long:"serial.baudrate"  env:"SERIAL_BAUDRATE"      description:"Serial bound rate (eg. 57600)" required:"true"`
 			DataBits              uint   `long:"serial.databits"  env:"SERIAL_DATABITS"      description:"Serial data bits (eg. 8)" required:"true"`
 			StopBits              uint   `long:"serial.stopbits"  env:"SERIAL_STOPBITS"      description:"Serial stop bits (eg. 1)" required:"true"`
-			InterCharacterTimeout uint   `long:"serial.intercharactertimeout"  env:"SERIAL_INTERCHARACTERTIMEOUT"      description:"An inter-character timeout value, in milliseconds" default:"1000"`
+			InterCharacterTimeout uint   `long:"serial.intercharactertimeout"  env:"SERIAL_INTERCHARACTERTIMEOUT"      description:"An inter-character timeout value, in milliseconds, see https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91" default:"1000"`
+			MinimumReadSize       uint   `long:"serial.minimumreadsize"        env:"SERIAL_MINIMUMREADSIZE"            description:"Minimum read size, see https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91" default:"0"`
 		}
 
 		// general options

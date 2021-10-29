@@ -24,8 +24,12 @@ Application Options:
       --serial.baudrate=              Serial bound rate (eg. 57600) [$SERIAL_BAUDRATE]
       --serial.databits=              Serial data bits (eg. 8) [$SERIAL_DATABITS]
       --serial.stopbits=              Serial stop bits (eg. 1) [$SERIAL_STOPBITS]
-      --serial.intercharactertimeout= An inter-character timeout value, in milliseconds (default: 1000)
-                                      [$SERIAL_INTERCHARACTERTIMEOUT]
+      --serial.intercharactertimeout= An inter-character timeout value, in milliseconds, see
+                                      https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91 (default:
+                                      1000) [$SERIAL_INTERCHARACTERTIMEOUT]
+      --serial.minimumreadsize=       Minimum read size, see
+                                      https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91 (default:
+                                      0) [$SERIAL_MINIMUMREADSIZE]
       --bind=                         Server address (default: :8080) [$SERVER_BIND]
 
 Help Options:
@@ -49,3 +53,10 @@ Metrics
 | `gqgmc_voltage`                      | Current device voltage                                                         |
 | `gqgmc_temperature`                  | Current device temperature (if supported)                                      |
 
+Tested devices
+--------------
+
+This exporter is tested with following devices:
+- GMC-300 plus
+
+If you need support for other devices I ready to add support other devices but I need access to it (eg. via SSH or physical).

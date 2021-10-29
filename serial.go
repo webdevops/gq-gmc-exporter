@@ -3,11 +3,17 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"github.com/jacobsa/go-serial/serial"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"strings"
+)
+
+const (
+	// GqGmcClearConsoleInputChars try to read that many chars to get input buffer cleared
+	GqGmcClearConsoleInputChars = 128
 )
 
 type (
@@ -17,19 +23,21 @@ type (
 		serialDataBits uint
 		serialStopBits uint
 
-		InterCharacterTimeout uint
+		interCharacterTimeout uint
+		minimumReadSize       uint
 
 		port io.ReadWriteCloser
 	}
 )
 
-func NewGqGmcDevice(port string, baudRate, dataBits, stopBits, InterCharacterTimeout uint) *GqGmcDevice {
+func NewGqGmcDevice(port string, baudRate, dataBits, stopBits, InterCharacterTimeout, minimumReadSize uint) *GqGmcDevice {
 	return &GqGmcDevice{
 		serialPort:            port,
 		serialBaudRate:        baudRate,
 		serialDataBits:        dataBits,
 		serialStopBits:        stopBits,
-		InterCharacterTimeout: InterCharacterTimeout,
+		interCharacterTimeout: InterCharacterTimeout,
+		minimumReadSize:       minimumReadSize,
 	}
 }
 
@@ -41,8 +49,8 @@ func (d *GqGmcDevice) Connect() {
 		DataBits:              d.serialDataBits,
 		StopBits:              d.serialStopBits,
 		ParityMode:            serial.PARITY_NONE,
-		InterCharacterTimeout: d.InterCharacterTimeout,
-		MinimumReadSize:       0,
+		InterCharacterTimeout: d.interCharacterTimeout,
+		MinimumReadSize:       d.minimumReadSize,
 	}
 
 	// Open the port.
@@ -70,6 +78,9 @@ func (d *GqGmcDevice) read(chars uint) ([]byte, error) {
 
 	buf := make([]byte, chars)
 	n, err := d.port.Read(buf)
+	if opts.Logger.Debug {
+		log.Debugf("fetched %v bytes:\n%v", len(buf), hex.Dump(buf))
+	}
 	if err != nil {
 		if err != io.EOF {
 			return buf, err
@@ -89,6 +100,11 @@ func (d *GqGmcDevice) readString(chars uint) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+func (d *GqGmcDevice) ClearSerialConsole() {
+	log.Debug("clear console input")
+	d.read(GqGmcClearConsoleInputChars) //nolint
 }
 
 func (d *GqGmcDevice) GetHardwareModel() (hwModelName string, hwModelVersion string) {

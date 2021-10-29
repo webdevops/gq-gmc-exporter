@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -70,6 +72,7 @@ func runProbes() {
 		opts.Serial.DataBits,
 		opts.Serial.StopBits,
 		opts.Serial.InterCharacterTimeout,
+		opts.Serial.MinimumReadSize,
 	)
 	gmcDevice.Connect()
 
@@ -80,6 +83,8 @@ func runProbes() {
 
 func runProbeLoop(gmcDevice *GqGmcDevice) {
 	defer gmcDevice.Close()
+
+	//
 
 	// get model details
 	hwModelName, hwModelVersion := gmcDevice.GetHardwareModel()
@@ -99,22 +104,34 @@ func runProbeLoop(gmcDevice *GqGmcDevice) {
 		hwModelVersion,
 	).Set(1)
 
-	time.Sleep(10 * time.Second)
+	hwModelNumber := 0
+	hwModelNameLowercase := strings.ToLower(hwModelName)
+	if strings.HasPrefix(hwModelNameLowercase, "gmc-") {
+		hwModelNumberString := strings.TrimPrefix(strings.ToLower(hwModelName), "gmc-")
+		if v, err := strconv.Atoi(hwModelNumberString); err == nil {
+			hwModelNumber = v
+			log.Infof("detected model number \"%v\"", hwModelNumber)
+		}
+	}
+
+	time.Sleep(5 * time.Second)
 
 	for {
-		go func() {
-			if val := gmcDevice.GetCpm(); val != nil {
-				prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(*val)
-			}
+		gmcDevice.ClearSerialConsole()
 
-			if val := gmcDevice.GetVoltage(); val != nil {
-				prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(*val)
-			}
+		if val := gmcDevice.GetCpm(); val != nil {
+			prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(*val)
+		}
 
+		if val := gmcDevice.GetVoltage(); val != nil {
+			prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(*val)
+		}
+
+		if hwModelNumber > 320 {
 			if val := gmcDevice.GetTemperature(); val != nil {
 				prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(*val)
 			}
-		}()
+		}
 		time.Sleep(30 * time.Second)
 	}
 }
