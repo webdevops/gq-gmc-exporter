@@ -25,12 +25,14 @@ Application Options:
       --serial.databits=              Serial data bits (eg. 8) [$SERIAL_DATABITS]
       --serial.stopbits=              Serial stop bits (eg. 1) [$SERIAL_STOPBITS]
       --serial.intercharactertimeout= An inter-character timeout value, in milliseconds, see
-                                      https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91 (default:
-                                      1000) [$SERIAL_INTERCHARACTERTIMEOUT]
+                                      https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91 (default: 1000)
+                                      [$SERIAL_INTERCHARACTERTIMEOUT]
       --serial.minimumreadsize=       Minimum read size, see
-                                      https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91 (default:
-                                      0) [$SERIAL_MINIMUMREADSIZE]
-      --bind=                         Server address (default: :8080) [$SERVER_BIND]
+                                      https://github.com/jacobsa/go-serial/blob/master/serial/serial.go#L91 (default: 0)
+                                      [$SERIAL_MINIMUMREADSIZE]
+      --server.bind=                  Server address (default: :8080) [$SERVER_BIND]
+      --server.timeout.read=          Server read timeout (default: 5s) [$SERVER_TIMEOUT_READ]
+      --server.timeout.write=         Server write timeout (default: 10s) [$SERVER_TIMEOUT_WRITE]
 
 Help Options:
   -h, --help                          Show this help message
