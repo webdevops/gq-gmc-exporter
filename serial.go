@@ -107,7 +107,7 @@ func (d *GqGmcDevice) readString(chars uint) (string, error) {
 func (d *GqGmcDevice) ClearSerialConsole() {
 	log.Debug("clear console input")
 	/* #nosec G104 -- we dont care about errors here */
-	d.read(GqGmcClearConsoleInputChars) //nolint
+	d.read(GqGmcClearConsoleInputChars) // nolint
 }
 
 func (d *GqGmcDevice) GetHardwareModel() (hwModelName string, hwModelVersion string) {
