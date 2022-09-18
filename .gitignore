@@ -1,3 +1,4 @@
 /vendor/
 /gq-gmc-exporter
 /*.exe
+/release-assets

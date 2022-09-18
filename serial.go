@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -83,7 +84,7 @@ func (d *GqGmcDevice) read(chars uint) ([]byte, error) {
 		log.Debugf("fetched %v bytes:\n%v", len(buf), hex.Dump(buf))
 	}
 	if err != nil {
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return buf, err
 		}
 	} else {
