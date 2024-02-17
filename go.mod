@@ -1,6 +1,6 @@
 module github.com/webdevops/gq-gmc-exporter
 
-go 1.21
+go 1.22
 
 require (
 	github.com/jacobsa/go-serial v0.0.0-20180131005756-15cf729a72d4
