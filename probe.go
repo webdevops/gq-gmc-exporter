@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -68,12 +67,12 @@ func runProbes() {
 	setupMetrics()
 
 	gmcDevice := NewGqGmcDevice(
-		opts.Serial.Port,
-		opts.Serial.BaudRate,
-		opts.Serial.DataBits,
-		opts.Serial.StopBits,
-		opts.Serial.InterCharacterTimeout,
-		opts.Serial.MinimumReadSize,
+		Opts.Serial.Port,
+		Opts.Serial.BaudRate,
+		Opts.Serial.DataBits,
+		Opts.Serial.StopBits,
+		Opts.Serial.InterCharacterTimeout,
+		Opts.Serial.MinimumReadSize,
 	)
 	gmcDevice.Connect()
 
@@ -90,9 +89,9 @@ func runProbeLoop(gmcDevice *GqGmcDevice) {
 	// get model details
 	hwModelName, hwModelVersion := gmcDevice.GetHardwareModel()
 	if hwModelName == "" || hwModelVersion == "" {
-		log.Panic("no model or version detected, please check serial settings or device support")
+		logger.Panic("no model or version detected, please check serial settings or device support")
 	} else {
-		log.Printf(
+		logger.Infof(
 			"detected device model \"%s\" with version \"%s\"\n",
 			hwModelName,
 			hwModelVersion,
@@ -100,7 +99,7 @@ func runProbeLoop(gmcDevice *GqGmcDevice) {
 	}
 
 	prometheusGmcInfo.WithLabelValues(
-		opts.Serial.Port,
+		Opts.Serial.Port,
 		hwModelName,
 		hwModelVersion,
 	).Set(1)
@@ -111,7 +110,7 @@ func runProbeLoop(gmcDevice *GqGmcDevice) {
 		hwModelNumberString := strings.TrimPrefix(strings.ToLower(hwModelName), "gmc-")
 		if v, err := strconv.Atoi(hwModelNumberString); err == nil {
 			hwModelNumber = v
-			log.Infof("detected model number \"%v\"", hwModelNumber)
+			logger.Infof("detected model number \"%v\"", hwModelNumber)
 		}
 	}
 
@@ -121,16 +120,16 @@ func runProbeLoop(gmcDevice *GqGmcDevice) {
 		gmcDevice.ClearSerialConsole()
 
 		if val := gmcDevice.GetCpm(); val != nil {
-			prometheusGmcCpm.WithLabelValues(opts.Serial.Port).Set(*val)
+			prometheusGmcCpm.WithLabelValues(Opts.Serial.Port).Set(*val)
 		}
 
 		if val := gmcDevice.GetVoltage(); val != nil {
-			prometheusGmcVoltage.WithLabelValues(opts.Serial.Port).Set(*val)
+			prometheusGmcVoltage.WithLabelValues(Opts.Serial.Port).Set(*val)
 		}
 
 		if hwModelNumber > 320 {
 			if val := gmcDevice.GetTemperature(); val != nil {
-				prometheusGmcTemperature.WithLabelValues(opts.Serial.Port).Set(*val)
+				prometheusGmcTemperature.WithLabelValues(Opts.Serial.Port).Set(*val)
 			}
 		}
 		time.Sleep(30 * time.Second)

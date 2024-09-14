@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/jacobsa/go-serial/serial"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -58,7 +57,7 @@ func (d *GqGmcDevice) Connect() {
 	// Open the port.
 	port, err := serial.Open(options)
 	if err != nil {
-		log.Panicf("cannot open %v: %v", d.serialPort, err)
+		logger.Panicf("cannot open %v: %v", d.serialPort, err)
 	}
 
 	d.port = port
@@ -69,20 +68,19 @@ func (d *GqGmcDevice) Close() error {
 }
 
 func (d *GqGmcDevice) write(command string) error {
-	log.Debugf("sending %v command", command)
+	logger.Debugf("sending %v command", command)
 	command = fmt.Sprintf("<%s>>", command)
 	_, err := d.port.Write([]byte(command))
 	return err
 }
 
 func (d *GqGmcDevice) read(chars uint) ([]byte, error) {
-	log.Debugf("reading %v bytes", chars)
+	logger.Debugf("reading %v bytes", chars)
 
 	buf := make([]byte, chars)
 	n, err := d.port.Read(buf)
-	if opts.Logger.Debug {
-		log.Debugf("fetched %v bytes:\n%v", len(buf), hex.Dump(buf))
-	}
+	logger.Debugf("fetched %v bytes:\n%v", len(buf), hex.Dump(buf))
+
 	if err != nil {
 		if !errors.Is(err, io.EOF) {
 			return buf, err
@@ -105,26 +103,26 @@ func (d *GqGmcDevice) readString(chars uint) (string, error) {
 }
 
 func (d *GqGmcDevice) ClearSerialConsole() {
-	log.Debug("clear console input")
+	logger.Debug("clear console input")
 	/* #nosec G104 -- we dont care about errors here */
 	d.read(GqGmcClearConsoleInputChars) // nolint
 }
 
 func (d *GqGmcDevice) GetHardwareModel() (hwModelName string, hwModelVersion string) {
 	if err := d.write("GETVER"); err != nil {
-		log.Panicf("error sending command to serial port: %v", err)
+		logger.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if val, err := d.readString(7); err == nil {
 		hwModelName = val
 	} else {
-		log.Panicf("error reading from serial port: %v", err)
+		logger.Panicf("error reading from serial port: %v", err)
 	}
 
 	if val, err := d.readString(7); err == nil {
 		hwModelVersion = val
 	} else {
-		log.Panicf("error reading from serial port: %v", err)
+		logger.Panicf("error reading from serial port: %v", err)
 	}
 
 	return
@@ -132,13 +130,13 @@ func (d *GqGmcDevice) GetHardwareModel() (hwModelName string, hwModelVersion str
 
 func (d *GqGmcDevice) GetHardwareSerial() (hwSerial string) {
 	if err := d.write("GETSERIAL"); err != nil {
-		log.Panicf("error sending command to serial port: %v", err)
+		logger.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if val, err := d.readString(7); err == nil {
 		hwSerial = val
 	} else {
-		log.Panicf("error reading from serial port: %v", err)
+		logger.Panicf("error reading from serial port: %v", err)
 	}
 
 	return
@@ -146,7 +144,7 @@ func (d *GqGmcDevice) GetHardwareSerial() (hwSerial string) {
 
 func (d *GqGmcDevice) GetCpm() (cpm *float64) {
 	if err := d.write("GETCPM"); err != nil {
-		log.Panicf("error sending command to serial port: %v", err)
+		logger.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if buf, err := d.read(2); err == nil {
@@ -155,7 +153,7 @@ func (d *GqGmcDevice) GetCpm() (cpm *float64) {
 			cpm = &val
 		}
 	} else {
-		log.Panicf("error reading from serial port: %v", err)
+		logger.Panicf("error reading from serial port: %v", err)
 	}
 
 	return
@@ -163,7 +161,7 @@ func (d *GqGmcDevice) GetCpm() (cpm *float64) {
 
 func (d *GqGmcDevice) GetVoltage() (voltage *float64) {
 	if err := d.write("GETVOLT"); err != nil {
-		log.Panicf("error sending command to serial port: %v", err)
+		logger.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if buf, err := d.read(1); err == nil {
@@ -172,7 +170,7 @@ func (d *GqGmcDevice) GetVoltage() (voltage *float64) {
 			voltage = &val
 		}
 	} else {
-		log.Panicf("error reading from serial port: %v", err)
+		logger.Panicf("error reading from serial port: %v", err)
 	}
 
 	return
@@ -180,7 +178,7 @@ func (d *GqGmcDevice) GetVoltage() (voltage *float64) {
 
 func (d *GqGmcDevice) GetTemperature() (temp *float64) {
 	if err := d.write("GETTEMP"); err != nil {
-		log.Panicf("error sending command to serial port: %v", err)
+		logger.Panicf("error sending command to serial port: %v", err)
 	}
 
 	if buf, err := d.read(4); err == nil {
@@ -199,7 +197,7 @@ func (d *GqGmcDevice) GetTemperature() (temp *float64) {
 			temp = &calcTemp
 		}
 	} else {
-		log.Panicf("error reading from serial port: %v", err)
+		logger.Panicf("error reading from serial port: %v", err)
 	}
 
 	return
